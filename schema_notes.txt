@@ -1,0 +1,100 @@
+Tables we want:
+- station_information
+    - primary_key: station_id
+- station_current_availability
+    - primary_key: station_id
+- trip_information:
+    - station_id_start
+    - station_id_end
+- vehicle info?
+
+
+Overall Notes:
+- For a station, need to keep special details in mind
+    - Is renting
+    - vehicle type
+    - availability per vehicle type
+    - does your drop off take your specific vehicle type
+    - information timeout
+
+https://citibikenyc.com/system-data
+============================
+trip_information
+For Example:
+- 202610-citibike-tripdata.zip
+    - Has multiple parts: part1, part2, part3...
+    ride_id, rideable_type, 
+    started_at, ended_at, 
+    start_station_name, start_station_id,
+    end_station_name, end_station_id,
+    start_lat, start_lng, end_lat, end_lng,
+    member_casual
+- JC-202610-citibike-tripdata.zip
+    "ride_id","rideable_type",
+    "started_at","ended_at",
+    "start_station_name","start_station_id",
+    "end_station_name","end_station_id",
+    "start_lat","start_lng","end_lat","end_lng",
+    "member_casual"
+- They seem to have the same fields
+- the first folder has way more data
+- Some notes for us:
+    - station_id
+    - station_name
+    - lat/lon
+    - start/end time
+
+
+https://gbfs.org/documentation/reference/
+============================
+List of discovery urls:
+- https://github.com/MobilityData/gbfs/blob/master/systems.csv
+    Some relevant ones:
+    new york citi bike: 
+        US	Citi Bike	New York, NY	lyft_nyc	https://www.citibikenyc.com	https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json	2.3
+        So we use: https://www.citibikenyc.com	https://gbfs.citibikenyc.com/gbfs/2.3/gbfs.json for our discoveries
+        We can eventually add another layer for keeping track of our list of discovery urls or uptdating it from the repo or maybe keeping a copy of the .csv on our repo and updating it periodically
+
+To hit auto-discovery endpoint (for bay area)
+* Seems like there's different endpoints for different regions,
+* So would want to unify this at some point in our database
+https://gbfs.lyft.com/gbfs/2.3/bay/gbfs.json
+- This has endpoints listed out with a descriptive name and endpoint
+- Such as: 
+    - gbfs: 	"https://gbfs.lyft.com/gbfs/2.3/bay/gbfs.json"
+    - "system_information": 	"https://gbfs.lyft.com/gbfs/2.3/bay/en/system_information.json"
+- So you can loop through it and get "name" and "url" field in case the endpoints update
+
+
+
+station_information
+- https://gbfs.org/documentation/reference/#station_informationjson
+    * Don't think this has current status, just metadata
+    - station_id
+    - name: public name
+    - short_name: 
+    - lat/lon
+    - region_id: Could help with doing focus regions: https://gbfs.org/documentation/reference/#system_regionsjson
+        - Includes jurisdictions, neighrborhoods, etc. will def want to use this
+        - Not sure if it can be tied back to trips. We can if we can cross reference station_id
+    - capacity: total docking stations, either occupied or not
+    - vehicle_types_capacity[].vehicle_type_ids,count
+    - vehicle_docks_capacity[].vehicle_type_ids,count
+
+    other:
+    - address
+    - cross_street
+    - station_opening_hours
+    - station_area: geojson multipolygon
+
+station_current_availability
+- https://gbfs.org/documentation/reference/#station_statusjson
+    - stations[]
+    - num_vehicles_available
+    - vehicle_types_available
+    - vehicle_types_available[].vehicle_type_id, count
+- Get the entire list then look for your station in the stations list
+
+
+Can actually get vehicle availability itself
+https://gbfs.org/documentation/reference/#vehicle_statusjson
